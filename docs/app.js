@@ -9,8 +9,9 @@ let reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let motionPaused = reduced;
 let activeProject = 0, lastFocus, modalScrollY = 0;
 const dlg = $('#project-dialog');
+document.addEventListener('portfolio:language',()=>{if(dlg.open)populateProject(activeProject);});
 function populateProject(i){
- activeProject=i;const p=projects[i];$('#detail-title').textContent=p.title;$('#detail-category').textContent=p.category;$('#detail-description').textContent=p.description;$('#detail-discipline').textContent=p.discipline;$('#detail-credit').innerHTML=p.credit;
+ activeProject=i;const p=window.portfolioI18n.project(i,projects[i]);$('#detail-title').textContent=p.title;$('#detail-category').textContent=p.category;$('#detail-description').textContent=p.description;$('#detail-discipline').textContent=p.discipline;$('#detail-credit').innerHTML=p.credit;
  const cover=document.querySelectorAll('.project-cover')[i].cloneNode(true);cover.removeAttribute('data-project');cover.removeAttribute('aria-label');cover.setAttribute('tabindex','-1');cover.querySelector('.cover-action')?.remove();
  const visual=$('#detail-visual');visual.replaceChildren(...(i<2?[cover.querySelector('img')]:[cover]));
 }
@@ -30,7 +31,8 @@ if(window.gsap&&window.ScrollTrigger){
  const orbit=$('#orbit'),stage=$('.orbit-stage');
  const state={auto:0,scroll:0,drag:0,tilt:0};let down=false;
  const render=()=>gsap.set(orbit,{rotationY:-25+state.auto+state.scroll+state.drag,rotationX:-15+state.tilt});
- const motionButton=$('#motion-toggle');function syncMotion(){motionButton.textContent=motionPaused?'自动旋转':'暂停旋转';motionButton.setAttribute('aria-pressed',String(motionPaused));}syncMotion();
+ const motionButton=$('#motion-toggle');function syncMotion(){motionButton.textContent=window.portfolioI18n.text(motionPaused?'play':'pause');motionButton.setAttribute('aria-pressed',String(motionPaused));}syncMotion();
+ document.addEventListener('portfolio:language',syncMotion);
  motionButton.onclick=()=>{motionPaused=!motionPaused;syncMotion();};
  gsap.ticker.add((time,delta)=>{if(!motionPaused&&!reduced&&!down&&!dlg.open&&window.scrollY<window.innerHeight*1.4&&!document.hidden){state.auto+=Math.min(delta,40)*.002;render();}});
  function rotate(amount){gsap.to(state,{drag:state.drag+amount,duration:reduced?0:.9,ease:'power3.out',onUpdate:render});}
